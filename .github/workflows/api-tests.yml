@@ -1,0 +1,32 @@
+# Tên của quy trình CI/CD
+name: Run Postman Collection
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-postman:
+    runs-on: ubuntu-latest
+    steps:
+      # Bước 1: Lấy mã nguồn về
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Bước 2: Cài đặt Newman
+      - name: Install Newman
+        run: npm install -g newman
+
+      # Bước 3: Tải Collection mới nhất từ Postman API
+      - name: Download Postman Collection from API
+        run: |
+          curl --location \
+          --request GET "https://api.getpostman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}" \
+          --header "X-Api-Key: ${{ secrets.POSTMAN_API_KEY }}" \
+          --output collection.json
+
+      # Bước 4: Chạy test bằng Newman
+      - name: Run Postman Collection with Newman
+        run: newman run collection.json
