@@ -22,4 +22,4 @@ jobs:
 
       - name: Run Postman tests
         # Newman sẽ tự động dùng URL mới trong collection của bạn
-        run: newman run postman/toolshop-api-tests.json
+        run: newman run postman/toolshop-api-tests.json -e postman/toolshop.postman_environment.json
