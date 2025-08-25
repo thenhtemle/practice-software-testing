@@ -8,11 +8,6 @@ on:
 jobs:
   run-api-tests:
     runs-on: ubuntu-latest
-    # Đặt thư mục làm việc mặc định cho các lệnh run
-    defaults:
-      run:
-        working-directory: ./sprint5-with-bugs
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,25 +17,9 @@ jobs:
         with:
           node-version: '18'
 
-      # BƯỚC MỚI: Cài đặt các thư viện cho dự án Toolshop
-      - name: Install App Dependencies
-        run: npm install
-
-      # BƯỚC MỚI: Khởi động server Toolshop ở chế độ nền (dấu & rất quan trọng)
-      - name: Start Application Server
-        run: npm start &
-
-      # BƯỚC MỚI: Đợi 15 giây để server có đủ thời gian khởi động
-      - name: Wait for server to start
-        run: sleep 15
-        shell: bash
-
-      # Bước cài đặt Newman (cần chạy ở thư mục gốc)
       - name: Install Newman
         run: npm install -g newman
-        working-directory: . # Reset về thư mục gốc để cài đặt global
 
-      # Bước chạy test (cần chạy ở thư mục gốc)
       - name: Run Postman tests
+        # Newman sẽ tự động dùng URL mới trong collection của bạn
         run: newman run postman/toolshop-api-tests.json
-        working-directory: . # Reset về thư mục gốc để tìm thấy thư mục postman
