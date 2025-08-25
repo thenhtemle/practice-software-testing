@@ -1,32 +1,46 @@
-# Tên của quy trình CI/CD
-name: Run Postman Collection
+name: Toolshop API Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  run-postman:
+  run-api-tests:
     runs-on: ubuntu-latest
+    # Đặt thư mục làm việc mặc định cho các lệnh run
+    defaults:
+      run:
+        working-directory: ./sprint5-with-bugs
+
     steps:
-      # Bước 1: Lấy mã nguồn về
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # Bước 2: Cài đặt Newman
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # BƯỚC MỚI: Cài đặt các thư viện cho dự án Toolshop
+      - name: Install App Dependencies
+        run: npm install
+
+      # BƯỚC MỚI: Khởi động server Toolshop ở chế độ nền (dấu & rất quan trọng)
+      - name: Start Application Server
+        run: npm start &
+
+      # BƯỚC MỚI: Đợi 15 giây để server có đủ thời gian khởi động
+      - name: Wait for server to start
+        run: sleep 15
+        shell: bash
+
+      # Bước cài đặt Newman (cần chạy ở thư mục gốc)
       - name: Install Newman
         run: npm install -g newman
+        working-directory: . # Reset về thư mục gốc để cài đặt global
 
-      # Bước 3: Tải Collection mới nhất từ Postman API
-      - name: Download Postman Collection from API
-        run: |
-          curl --location \
-          --request GET "https://api.getpostman.com/collections/${{ secrets.POSTMAN_COLLECTION_ID }}" \
-          --header "X-Api-Key: ${{ secrets.POSTMAN_API_KEY }}" \
-          --output collection.json
-
-      # Bước 4: Chạy test bằng Newman
-      - name: Run Postman Collection with Newman
-        run: newman run collection.json
+      # Bước chạy test (cần chạy ở thư mục gốc)
+      - name: Run Postman tests
+        run: newman run postman/toolshop-api-tests.json
+        working-directory: . # Reset về thư mục gốc để tìm thấy thư mục postman
